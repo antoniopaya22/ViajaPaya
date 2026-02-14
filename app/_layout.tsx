@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
@@ -6,6 +6,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/theme";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -14,13 +15,25 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (fontsLoaded) {
+      // Hide the native splash screen immediately once fonts are loaded,
+      // our custom LoadingScreen takes over the transition.
       SplashScreen.hideAsync();
+
+      // Give a brief moment for the animated loading screen to display,
+      // then trigger the fade-out transition.
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 1800);
+
+      return () => clearTimeout(timer);
     }
   }, [fontsLoaded]);
 
+  // While fonts haven't loaded yet, render nothing (native splash still visible)
   if (!fontsLoaded) {
     return null;
   }
@@ -74,6 +87,9 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+
+      {/* Animated loading screen overlay — fades out when ready */}
+      {!isReady && <LoadingScreen />}
     </GestureHandlerRootView>
   );
 }
