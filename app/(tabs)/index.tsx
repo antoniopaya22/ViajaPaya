@@ -1,221 +1,521 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { TravelColors } from '@/constants/Colors';
-import { MenuDrawer } from '@/features/navigation';
-import { TripDetailScreen } from '@/features/trips';
-import TripListItem from '@/features/trips/components/TripListItem';
-import { useTrips } from '@/features/trips/hooks/useTrips';
-import CreateTripModal from '@/features/trips/modals/CreateTripModal';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FlatList, Platform, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  RefreshControl,
+  SectionList,
+  Platform,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter, useFocusEffect } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Colors, FontSizes, FontWeights, Spacing, BorderRadius, Layout } from "@/constants/theme";
+import { Trip, TripStatus, getTripStatus, getDaysUntilTrip } from "@/types/trip";
+import { getAllTrips } from "@/services/storage";
+import TripCard from "@/components/trips/TripCard";
+import EmptyState from "@/components/ui/EmptyState";
+import FAB from "@/components/ui/FAB";
+import WaveHeader from "@/components/ui/WaveHeader";
 
-export default function TripsScreen() {
-  const {
-    trips,
-    selectedTrip,
-    selectTrip,
-    addTrip,
-    isCreateModalVisible,
-    closeCreateModal,
-    createTrip,
-    refresh,
-    isRefreshing,
-    deleteTrip,
-    getTripImage,
-    updateTrip,
-  } = useTrips();
+// ─── Section type ────────────────────────────────────────────────────
 
-  if (selectedTrip) {
-    return (
-      <TripDetailScreen
-        trip={selectedTrip}
-        onUpdateTrip={updateTrip}
-        onBack={() => selectTrip(null)}
-      />
-    );
+interface TripSection {
+  key: TripStatus;
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  data: Trip[];
+}
+
+// ─── Helper: group trips into sections ───────────────────────────────
+
+function groupTrips(trips: Trip[]): TripSection[] {
+  const upcoming: Trip[] = [];
+  const ongoing: Trip[] = [];
+  const past: Trip[] = [];
+
+  for (const trip of trips) {
+    const status = getTripStatus(trip);
+    switch (status) {
+      case "upcoming":
+        upcoming.push(trip);
+        break;
+      case "ongoing":
+        ongoing.push(trip);
+        break;
+      case "past":
+        past.push(trip);
+        break;
+    }
   }
 
+  // Sort upcoming by closest first
+  upcoming.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+  // Sort past by most recent first
+  past.sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime());
+
+  const sections: TripSection[] = [];
+
+  if (ongoing.length > 0) {
+    sections.push({
+      key: "ongoing",
+      title: "En curso",
+      icon: "pulse-outline",
+      color: Colors.tripOngoing,
+      data: ongoing,
+    });
+  }
+
+  if (upcoming.length > 0) {
+    sections.push({
+      key: "upcoming",
+      title: "Próximos",
+      icon: "hourglass-outline",
+      color: Colors.tripUpcoming,
+      data: upcoming,
+    });
+  }
+
+  if (past.length > 0) {
+    sections.push({
+      key: "past",
+      title: "Pasados",
+      icon: "checkmark-circle-outline",
+      color: Colors.tripPast,
+      data: past,
+    });
+  }
+
+  return sections;
+}
+
+// ─── Helper: filter trips by search query ────────────────────────────
+
+function filterTrips(trips: Trip[], query: string): Trip[] {
+  if (!query.trim()) return trips;
+  const q = query.toLowerCase().trim();
+  return trips.filter((t) => t.name.toLowerCase().includes(q) || t.destination.toLowerCase().includes(q));
+}
+
+// ─── Component ───────────────────────────────────────────────────────
+
+export default function TripsHomeScreen() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+
+  // Load trips on focus
+  const loadTrips = useCallback(async () => {
+    try {
+      const allTrips = await getAllTrips();
+      setTrips(allTrips);
+    } catch (error) {
+      console.warn("[TripsHome] Error loading trips:", error);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTrips();
+    }, [loadTrips]),
+  );
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadTrips();
+    setRefreshing(false);
+  }, [loadTrips]);
+
+  const handleTripPress = useCallback(
+    (trip: Trip) => {
+      router.push(`/trip/${trip.id}`);
+    },
+    [router],
+  );
+
+  const handleCreateTrip = useCallback(() => {
+    // TODO: Navigate to create trip screen
+    // router.push('/trip/create');
+  }, []);
+
+  // ─── Derived state ──────────────────────────────────────────────
+
+  const filteredTrips = filterTrips(trips, searchQuery);
+  const sections = groupTrips(filteredTrips);
+
+  const totalTrips = trips.length;
+  const nextTrip = trips.find((t) => getTripStatus(t) === "upcoming");
+  const ongoingTrip = trips.find((t) => getTripStatus(t) === "ongoing");
+
+  const nextTripDays = nextTrip ? getDaysUntilTrip(nextTrip) : null;
+
+  const isEmpty = totalTrips === 0;
+  const noResults = totalTrips > 0 && filteredTrips.length === 0;
+
+  // ─── Render ─────────────────────────────────────────────────────
+
   return (
-    <View style={styles.container}>
-      {/* Header with gradient and menu button */}
-      <LinearGradient
-        colors={[TravelColors.gradient.start, TravelColors.gradient.end]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
-        <TouchableOpacity 
-          style={styles.menuButton} 
-          onPress={() => { /* TODO: implementar estado de menú global */ }}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="menu" size={22} color={TravelColors.textOnPrimary} />
-        </TouchableOpacity>
-        <ThemedText type="title" style={styles.headerTitle}>Mis Viajes</ThemedText>
-        <TouchableOpacity 
-          style={styles.addButton} 
-          onPress={addTrip}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="add" size={22} color={TravelColors.textOnPrimary} />
-        </TouchableOpacity>
-      </LinearGradient>
-      
-      <FlatList
-        data={trips}
-        renderItem={({ item }) => (
-          <TripListItem
-            trip={item}
-            onPress={() => selectTrip(item)}
-            onLongPress={() => deleteTrip(item.id)}
-            getImage={getTripImage}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        style={styles.tripsList}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={refresh}
-            colors={[TravelColors.primary, TravelColors.secondary]} // Android
-            tintColor={TravelColors.primary} // iOS
-            title="Recargando viajes..."
-            titleColor={TravelColors.textSecondary}
-            progressBackgroundColor={TravelColors.cardBackground}
-          />
-        }
-        ListEmptyComponent={() => (
-          <ThemedView style={styles.emptyState}>
-            <Ionicons name="airplane-outline" size={80} color={TravelColors.gray300} />
-            <ThemedText style={styles.emptyTitle}>¡Comienza tu aventura!</ThemedText>
-            <ThemedText style={styles.emptySubtitle}>
-              Crea tu primer viaje y comienza a planear experiencias increíbles
-            </ThemedText>
-            <TouchableOpacity 
-              style={styles.emptyButton} 
-              onPress={addTrip}
-              activeOpacity={0.8}
+    <View style={styles.screen}>
+      {/* ─── Header with wave ────────────────────────────────── */}
+      <WaveHeader extraBottomPadding={isSearchVisible ? 4 : 0}>
+        {/* Greeting row */}
+        <View style={styles.headerTop}>
+          <View style={styles.headerTitleArea}>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.headerTitle}>Mis Viajes</Text>
+          </View>
+
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={[styles.headerIconButton, isSearchVisible && styles.headerIconButtonActive]}
+              onPress={() => {
+                setIsSearchVisible(!isSearchVisible);
+                if (isSearchVisible) setSearchQuery("");
+              }}
+              activeOpacity={0.7}
             >
-              <Ionicons name="add" size={20} color={TravelColors.textOnPrimary} />
-              <ThemedText style={styles.emptyButtonText}>Crear mi primer viaje</ThemedText>
+              <Ionicons
+                name={isSearchVisible ? "close" : "search"}
+                size={20}
+                color={isSearchVisible ? "#FFFFFF" : "rgba(255,255,255,0.85)"}
+              />
             </TouchableOpacity>
-          </ThemedView>
+          </View>
+        </View>
+
+        {/* Quick stats pills */}
+        {!isEmpty && (
+          <View style={styles.quickStats}>
+            {ongoingTrip ? (
+              <View style={[styles.quickStatPill, styles.quickStatPillOngoing]}>
+                <View style={[styles.quickStatDot, { backgroundColor: "#FFFFFF" }]} />
+                <Text style={[styles.quickStatText, styles.quickStatTextOngoing]}>1 viaje en curso</Text>
+              </View>
+            ) : nextTrip && nextTripDays !== null ? (
+              <View style={[styles.quickStatPill, styles.quickStatPillUpcoming]}>
+                <Ionicons name="calendar" size={13} color="#FFFFFF" style={styles.quickStatIcon} />
+                <Text style={[styles.quickStatText, styles.quickStatTextUpcoming]}>
+                  {nextTripDays === 0
+                    ? "¡El viaje es hoy!"
+                    : nextTripDays === 1
+                      ? "Próximo viaje mañana"
+                      : `Próximo viaje en ${nextTripDays} días`}
+                </Text>
+              </View>
+            ) : null}
+
+            <View style={styles.quickStatPillNeutral}>
+              <Ionicons name="airplane" size={13} color="rgba(255,255,255,0.7)" style={styles.quickStatIcon} />
+              <Text style={styles.quickStatTextNeutral}>
+                {totalTrips} viaje{totalTrips !== 1 ? "s" : ""}
+              </Text>
+            </View>
+          </View>
         )}
-      />
 
-      {/* Menu Drawer */}
-  {/* Menu Drawer (estado local podría moverse a un ui slice si crece) */}
-  <MenuDrawer visible={false} onClose={() => {}} />
+        {/* Search bar (collapsible) */}
+        {isSearchVisible && (
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Ionicons name="search" size={18} color="rgba(255,255,255,0.6)" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Buscar por nombre o destino..."
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus
+                returnKeyType="search"
+                clearButtonMode="while-editing"
+              />
+              {searchQuery.length > 0 && Platform.OS !== "ios" && (
+                <TouchableOpacity
+                  onPress={() => setSearchQuery("")}
+                  style={styles.clearButton}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.6)" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+      </WaveHeader>
 
-      {/* Create Trip Modal */}
-      <CreateTripModal
-        visible={isCreateModalVisible}
-        onClose={closeCreateModal}
-        onCreateTrip={createTrip}
+      {/* ─── Content ─────────────────────────────────────────── */}
+      {isEmpty ? (
+        <EmptyState
+          icon="airplane-outline"
+          title="¡Empieza a planificar!"
+          description="Crea tu primer viaje y organiza todos los detalles en un solo lugar."
+          actionLabel="Crear viaje"
+          onAction={handleCreateTrip}
+        />
+      ) : noResults ? (
+        <EmptyState
+          icon="search-outline"
+          title="Sin resultados"
+          description={`No se encontraron viajes para "${searchQuery}"`}
+          compact
+        />
+      ) : (
+        <SectionList
+          sections={sections}
+          keyExtractor={(item) => item.id}
+          stickySectionHeadersEnabled={false}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: insets.bottom + Layout.tabBarHeight + Spacing["3xl"] + 16 },
+          ]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={Colors.primary}
+              colors={[Colors.primary]}
+            />
+          }
+          renderSectionHeader={({ section }) => (
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionHeaderLeft}>
+                <View style={[styles.sectionIconCircle, { backgroundColor: `${section.color}14` }]}>
+                  <Ionicons name={section.icon} size={14} color={section.color} />
+                </View>
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+              </View>
+              <View style={styles.sectionCountBadge}>
+                <Text style={styles.sectionCount}>{section.data.length}</Text>
+              </View>
+            </View>
+          )}
+          renderItem={({ item, section }) => (
+            <View style={styles.cardWrapper}>
+              <TripCard
+                trip={item}
+                onPress={() => handleTripPress(item)}
+                variant={section.key === "ongoing" ? "featured" : "default"}
+              />
+            </View>
+          )}
+          renderSectionFooter={() => <View style={styles.sectionFooter} />}
+        />
+      )}
+
+      {/* ─── FAB ─────────────────────────────────────────────── */}
+      <FAB
+        icon="add"
+        label={isEmpty ? undefined : undefined}
+        onPress={handleCreateTrip}
+        style={{
+          bottom: insets.bottom + Layout.tabBarHeight + Spacing.base + 8,
+        }}
       />
     </View>
   );
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 6) return "Buenas noches 🌙";
+  if (hour < 12) return "Buenos días ☀️";
+  if (hour < 20) return "Buenas tardes 🌤️";
+  return "Buenas noches 🌙";
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: TravelColors.background,
-    paddingBottom: Platform.OS === 'android' ? 5 : 0,
+    backgroundColor: Colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    paddingTop: 60,
-    elevation: 8,
-    ...(Platform.OS === 'web' ? 
-      { boxShadow: '0px 4px 12px rgba(42, 160, 224, 0.3)' } : 
-      { shadowColor: TravelColors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 }
-    )
+
+  // ─── Header ─────────────────────────────────────
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
-  menuButton: {
-    backgroundColor: 'transparent',
-    borderRadius: 24,
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 0,
+  headerTitleArea: {
+    flex: 1,
+  },
+  greeting: {
+    fontSize: FontSizes.md,
+    fontWeight: FontWeights.medium,
+    color: "rgba(255,255,255,0.75)",
+    marginBottom: Spacing.xs,
+    letterSpacing: 0.1,
   },
   headerTitle: {
-    color: TravelColors.textOnPrimary,
-    fontSize: 28,
-    fontWeight: '700',
-    flex: 1,
-    textAlign: 'center',
-    ...(Platform.OS === 'web' ? 
-      { textShadow: '0px 1px 3px rgba(0, 0, 0, 0.3)' } : 
-      { textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }
-    )
+    fontSize: 30,
+    fontWeight: FontWeights.bold,
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
   },
-  addButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderRadius: 24,
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    paddingTop: Spacing.xs,
+  },
+  headerIconButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-    elevation: 4,
-    ...(Platform.OS === 'web' ? 
-      { boxShadow: '0px 2px 8px rgba(42, 160, 224, 0.2)' } : 
-      { shadowColor: TravelColors.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 8 }
-    )
+    borderColor: "rgba(255,255,255,0.2)",
   },
-  tripsList: {
-    flex: 1,
-    padding: 20,
+  headerIconButtonActive: {
+    backgroundColor: "rgba(255,255,255,0.25)",
+    borderColor: "rgba(255,255,255,0.35)",
   },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 80,
-    paddingHorizontal: 40,
+
+  // ─── Quick stats ────────────────────────────────
+  quickStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: Spacing.lg,
+    gap: Spacing.sm,
+    flexWrap: "wrap",
   },
-  emptyTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: TravelColors.textPrimary,
-    marginTop: 24,
-    marginBottom: 12,
-    textAlign: 'center',
+  quickStatPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm - 1,
+    borderRadius: BorderRadius.full,
   },
-  emptySubtitle: {
-    fontSize: 16,
-    color: TravelColors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
-    paddingHorizontal: 10,
+  quickStatPillOngoing: {
+    backgroundColor: "rgba(255,255,255,0.18)",
   },
-  emptyButton: {
-    backgroundColor: TravelColors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 18,
-    borderRadius: 24,
-    elevation: 8,
+  quickStatPillUpcoming: {
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  quickStatPillNeutral: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm - 1,
+    borderRadius: BorderRadius.full,
+    backgroundColor: "rgba(255,255,255,0.12)",
+  },
+  quickStatDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginRight: Spacing.sm,
+  },
+  quickStatIcon: {
+    marginRight: Spacing.xs + 1,
+  },
+  quickStatText: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.semibold,
+    letterSpacing: 0.1,
+  },
+  quickStatTextOngoing: {
+    color: "#FFFFFF",
+  },
+  quickStatTextUpcoming: {
+    color: "#FFFFFF",
+  },
+  quickStatTextNeutral: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.medium,
+    color: "rgba(255,255,255,0.7)",
+  },
+
+  // ─── Search ─────────────────────────────────────
+  searchContainer: {
+    marginTop: Spacing.base,
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.base,
+    height: 46,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    ...(Platform.OS === 'web' ? 
-      { boxShadow: '0px 4px 12px rgba(42, 160, 224, 0.3)' } : 
-      { shadowColor: TravelColors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 }
-    )
+    borderColor: "rgba(255,255,255,0.2)",
   },
-  emptyButtonText: {
-    color: TravelColors.textOnPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginLeft: 10,
+  searchIcon: {
+    marginRight: Spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: FontSizes.md,
+    fontWeight: FontWeights.regular,
+    color: "#FFFFFF",
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: Spacing.xs,
+    marginLeft: Spacing.xs,
+  },
+
+  // ─── Section list ───────────────────────────────
+  listContent: {
+    paddingHorizontal: Layout.screenPaddingHorizontal,
+    paddingTop: Spacing.sm,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: Spacing.md,
+    marginTop: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
+  sectionHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  sectionIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: FontWeights.bold,
+    color: Colors.text,
+    letterSpacing: -0.2,
+  },
+  sectionCountBadge: {
+    backgroundColor: Colors.secondaryMuted,
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
+    minWidth: 28,
+    alignItems: "center",
+  },
+  sectionCount: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.semibold,
+    color: Colors.textTertiary,
+  },
+  cardWrapper: {
+    marginBottom: Spacing.xs,
+  },
+  sectionFooter: {
+    height: Spacing.lg,
   },
 });
