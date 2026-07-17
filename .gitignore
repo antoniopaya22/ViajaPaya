@@ -1,0 +1,19 @@
+# Expo / RN (se poblará más al hacer el bootstrap real)
+node_modules/
+.expo/
+dist/
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Env / secretos — nunca comitear credenciales de Supabase u otros servicios
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
