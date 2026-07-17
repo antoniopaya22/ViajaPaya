@@ -1,0 +1,211 @@
+[
+  {
+    "id": "f-000-project-bootstrap",
+    "title": "Bootstrap del proyecto Expo",
+    "description": "Inicializar el proyecto Expo real dentro de src/ (Expo Router, TypeScript, alias @/*), enlazado al proyecto EAS ya registrado (slug viajapaya, owner payarroni, project ID 8291752b-7169-4b66-866a-dd516ae047cb), con jest-expo y React Native Testing Library configurados.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "npx expo start arranca la app sin errores",
+      "app.json referencia el slug/owner/projectId de EAS correctos",
+      "Alias @/* resuelve a src/*",
+      "Un test de ejemplo en src/__tests__ pasa con npm test"
+    ],
+    "spec_path": null,
+    "dependencies": [],
+    "tags": ["setup", "infra"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-010-supabase-setup",
+    "title": "Integración de Supabase (cliente + esquema de BBDD)",
+    "description": "Configurar el cliente de Supabase (@supabase/supabase-js) en src/services/supabase.ts leyendo EXPO_PUBLIC_SUPABASE_URL/EXPO_PUBLIC_SUPABASE_ANON_KEY de variables de entorno, y crear el esquema inicial de Postgres (trips, bookings, expenses, documents, itinerary_items) con Row Level Security activado desde el primer día.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "El cliente de Supabase se inicializa sin credenciales hardcodeadas en el código",
+      "Existen tablas para trips/bookings/expenses/documents/itinerary_items con columna user_id",
+      "Todas las tablas tienen RLS activado con política user_id = auth.uid()",
+      "Una consulta de prueba autenticada devuelve solo filas del usuario actual"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-000-project-bootstrap"],
+    "tags": ["backend", "supabase", "infra"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-011-auth-sso",
+    "title": "Autenticación SSO con Supabase Auth",
+    "description": "Login/logout mediante SSO (proveedores sociales, p. ej. Google/Apple) usando Supabase Auth, con sesión persistida y pantallas de la app protegidas para usuarios autenticados.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "El usuario puede iniciar sesión mediante un proveedor SSO soportado por Supabase Auth",
+      "La sesión persiste entre reinicios de la app",
+      "Las pantallas de viajes/documentos no son accesibles sin sesión iniciada",
+      "El usuario puede cerrar sesión"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-010-supabase-setup"],
+    "tags": ["auth", "sso", "supabase"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-001-trip-crud",
+    "title": "Gestión de viajes (CRUD)",
+    "description": "Crear, ver, editar y borrar viajes (nombre, destino(s), fechas de inicio/fin, imagen de portada, presupuesto total). Es la entidad raíz de la que cuelga todo lo demás.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "El usuario puede crear un viaje con nombre, destino y fechas",
+      "El usuario puede editar y borrar un viaje existente",
+      "La lista de viajes se ordena por fecha de inicio",
+      "Los datos persisten entre reinicios de la app"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-011-auth-sso"],
+    "tags": ["trip", "core"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-002-booking-flight",
+    "title": "Reservas de vuelo",
+    "description": "Añadir, editar y borrar reservas de vuelo dentro de un viaje: aerolínea, número de vuelo, aeropuertos origen/destino, fecha/hora de salida y llegada, terminal, puerta, localizador.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "Campos obligatorios: aeropuerto origen, aeropuerto destino, fecha y hora de salida",
+      "Campos opcionales: aerolínea, número de vuelo, terminal salida/llegada, puerta, localizador",
+      "El vuelo aparece en el itinerario del viaje en la fecha correspondiente"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-001-trip-crud"],
+    "tags": ["booking", "flight"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-003-booking-train",
+    "title": "Reservas de tren",
+    "description": "Añadir, editar y borrar reservas de tren dentro de un viaje: compañía, estación origen/destino, fecha/hora de salida y llegada, andén, asiento.",
+    "status": "backlog",
+    "priority": "should",
+    "acceptance_criteria": [
+      "Campos obligatorios: estación origen, estación destino, fecha y hora de salida",
+      "Campos opcionales: compañía, andén, asiento, localizador",
+      "El tren aparece en el itinerario del viaje en la fecha correspondiente"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-001-trip-crud"],
+    "tags": ["booking", "train"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-004-booking-hotel",
+    "title": "Reservas de alojamiento",
+    "description": "Añadir, editar y borrar reservas de hotel/alojamiento dentro de un viaje: nombre, dirección, fecha de check-in/check-out, número de reserva.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "Campos obligatorios: nombre del alojamiento, fecha check-in, fecha check-out",
+      "Campos opcionales: dirección, número de reserva",
+      "El alojamiento aparece en el itinerario cubriendo el rango de fechas de la estancia"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-001-trip-crud"],
+    "tags": ["booking", "hotel"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-005-booking-activity",
+    "title": "Reservas de actividades",
+    "description": "Añadir, editar y borrar reservas de actividades dentro de un viaje: nombre, ubicación, fecha/hora, duración, entrada/localizador.",
+    "status": "backlog",
+    "priority": "should",
+    "acceptance_criteria": [
+      "Campos obligatorios: nombre de la actividad, fecha y hora",
+      "Campos opcionales: ubicación, duración, localizador/entrada",
+      "La actividad aparece en el itinerario del viaje en la fecha correspondiente"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-001-trip-crud"],
+    "tags": ["booking", "activity"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-006-budget-expenses",
+    "title": "Presupuesto y gastos",
+    "description": "Registrar gastos asociados a un viaje (importe, moneda, categoría, fecha, nota) y comparar el total gastado contra el presupuesto del viaje.",
+    "status": "backlog",
+    "priority": "should",
+    "acceptance_criteria": [
+      "El usuario puede añadir un gasto con importe, categoría y fecha",
+      "Se muestra el total gastado frente al presupuesto del viaje",
+      "Los gastos se pueden filtrar por categoría"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-001-trip-crud"],
+    "tags": ["budget", "expenses"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-007-document-manager",
+    "title": "Gestor de documentos",
+    "description": "Adjuntar y consultar documentos personales (pasaporte, DNI, visado, seguro) y documentos de reserva (entradas, QR, billetes) con acceso rápido y funcionamiento offline.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "El usuario puede adjuntar una foto/PDF como documento, con tipo y fecha de caducidad opcional",
+      "Los documentos personales son accesibles sin depender de un viaje concreto",
+      "Los documentos ligados a una reserva (billete, QR) son accesibles desde esa reserva",
+      "La visualización de un documento funciona sin conexión a internet"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-011-auth-sso"],
+    "tags": ["documents", "core"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-008-itinerary-timeline",
+    "title": "Itinerario / timeline del viaje",
+    "description": "Vista día a día del viaje que combina automáticamente reservas (vuelos, trenes, hoteles, actividades) con notas manuales del usuario.",
+    "status": "backlog",
+    "priority": "must",
+    "acceptance_criteria": [
+      "El itinerario muestra los elementos ordenados cronológicamente por día",
+      "Cada reserva del viaje aparece automáticamente en su fecha correspondiente",
+      "El usuario puede añadir entradas manuales al itinerario"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-001-trip-crud", "f-002-booking-flight", "f-003-booking-train", "f-004-booking-hotel", "f-005-booking-activity"],
+    "tags": ["itinerary", "timeline"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-009-quick-access-offline",
+    "title": "Acceso rápido offline durante el viaje",
+    "description": "Pantalla/atajo para acceder en segundos al próximo transporte (hora/terminal/andén), al QR/entrada más próximo, o a un documento personal escaneado, todo sin conexión.",
+    "status": "backlog",
+    "priority": "should",
+    "acceptance_criteria": [
+      "Existe un acceso directo desde la pantalla principal al 'próximo evento' del viaje activo",
+      "El acceso directo funciona completamente offline",
+      "Desde ahí se puede abrir el QR/documento asociado en pantalla completa"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-007-document-manager", "f-008-itinerary-timeline"],
+    "tags": ["ux", "offline"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  }
+]
