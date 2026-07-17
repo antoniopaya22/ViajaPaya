@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { View } from 'react-native';
 
 import { useTheme } from '@/theme';
@@ -18,19 +19,21 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
 
   return (
     <View style={{ alignItems: 'center', paddingVertical: spacing.xxl, gap: spacing.sm }}>
-      <View
+      <LinearGradient
+        colors={[colors.primaryMuted, colors.surfaceAlt]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={{
-          width: 72,
-          height: 72,
+          width: 80,
+          height: 80,
           borderRadius: radius.pill,
-          backgroundColor: colors.primaryMuted,
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: spacing.xs,
         }}
       >
-        <Ionicons name={icon} size={32} color={colors.primary} />
-      </View>
+        <Ionicons name={icon} size={34} color={colors.primary} />
+      </LinearGradient>
 
       <Text variant="h3" align="center">
         {title}

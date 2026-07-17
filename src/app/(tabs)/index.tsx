@@ -1,7 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { TripCard, type TripStatus } from '@/components/trips/TripCard';
-import { Button, EmptyState, Header, Screen, Text } from '@/components/ui';
+import { Avatar, Button, EmptyState, Screen, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 // Datos de ejemplo para mostrar el diseño — se sustituyen por datos reales en f-001-trip-crud.
@@ -32,20 +33,37 @@ const DEMO_TRIPS: Array<{
 ];
 
 export default function TripsScreen() {
-  const { spacing } = useTheme();
+  const { colors, spacing } = useTheme();
   const hasTrips = DEMO_TRIPS.length > 0;
 
   return (
     <Screen scroll>
-      <Header title="Tus viajes" subtitle="Todo lo que ya tienes reservado" />
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md }}>
+        <View style={{ flex: 1 }}>
+          <Text variant="display">¡Hola, Antonio!</Text>
+          <Text variant="subtitle" color="textSecondary">
+            Aquí tienes tus viajes
+          </Text>
+        </View>
+        <Avatar name="Antonio Paya" />
+      </View>
 
       {hasTrips ? (
         <View style={{ gap: spacing.md, marginTop: spacing.xs }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text variant="overline" color="textTertiary">
+              TUS VIAJES
+            </Text>
+            <Button
+              label="Nuevo"
+              size="sm"
+              leftIcon={<Ionicons name="add" size={16} color={colors.onPrimary} />}
+            />
+          </View>
+
           {DEMO_TRIPS.map((trip) => (
             <TripCard key={trip.id} {...trip} />
           ))}
-
-          <Button label="Añadir viaje" variant="secondary" fullWidth />
         </View>
       ) : (
         <EmptyState

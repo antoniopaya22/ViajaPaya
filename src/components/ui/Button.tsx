@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps } from 'react-native';
 
 import { useTheme } from '@/theme';
@@ -41,6 +42,7 @@ export function Button({
     destructive: { bg: colors.danger, border: colors.danger, fg: colors.textInverse },
   };
   const { bg, border, fg } = palette[variant];
+  const isGradient = variant === 'primary';
 
   return (
     <Pressable
@@ -50,22 +52,32 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         {
-          backgroundColor: bg,
+          backgroundColor: isGradient ? 'transparent' : bg,
           borderColor: border,
           borderWidth: variant === 'outline' ? 1.5 : 0,
           borderRadius: radius.md,
           height: SIZE_HEIGHT[size],
-          paddingHorizontal: SIZE_PADDING_X[size],
+          paddingHorizontal: isGradient ? 0 : SIZE_PADDING_X[size],
           opacity: isDisabled ? 0.5 : pressed ? 0.8 : 1,
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
+          overflow: isGradient ? 'hidden' : 'visible',
         },
       ]}
       {...rest}
     >
+      {isGradient && (
+        <LinearGradient
+          colors={[colors.gradientFrom, colors.gradientTo]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
+
       {loading ? (
-        <ActivityIndicator color={fg} />
+        <ActivityIndicator color={fg} style={isGradient ? { paddingHorizontal: SIZE_PADDING_X[size] } : undefined} />
       ) : (
-        <View style={styles.content}>
+        <View style={[styles.content, isGradient && { paddingHorizontal: SIZE_PADDING_X[size] }]}>
           {leftIcon}
           <Text variant="button" color="textPrimary" style={{ color: fg }}>
             {label}
@@ -86,6 +98,7 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
 });
