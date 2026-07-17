@@ -5,8 +5,9 @@ import { View } from 'react-native';
 import { Card, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 import type { BadgeVariant } from '@/components/ui/Badge';
+import type { TripStatus } from '@/types/trip';
 
-export type TripStatus = 'upcoming' | 'ongoing' | 'past';
+export type { TripStatus };
 
 const STATUS_LABEL: Record<TripStatus, string> = {
   upcoming: 'Próximo',
