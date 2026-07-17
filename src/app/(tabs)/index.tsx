@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
+import { useAuth } from '@/contexts/AuthProvider';
 import { TripCard, type TripStatus } from '@/components/trips/TripCard';
 import { Avatar, Button, EmptyState, Screen, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
+import { displayNameFromEmail } from '@/utils/user';
 
 // Datos de ejemplo para mostrar el diseño — se sustituyen por datos reales en f-001-trip-crud.
 const DEMO_TRIPS: Array<{
@@ -34,18 +36,20 @@ const DEMO_TRIPS: Array<{
 
 export default function TripsScreen() {
   const { colors, spacing } = useTheme();
+  const { user } = useAuth();
   const hasTrips = DEMO_TRIPS.length > 0;
+  const name = user?.email ? displayNameFromEmail(user.email) : '';
 
   return (
     <Screen scroll>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md }}>
         <View style={{ flex: 1 }}>
-          <Text variant="display">¡Hola, Antonio!</Text>
+          <Text variant="display">{name ? `¡Hola, ${name}!` : '¡Hola!'}</Text>
           <Text variant="subtitle" color="textSecondary">
             Aquí tienes tus viajes
           </Text>
         </View>
-        <Avatar name="Antonio Paya" />
+        <Avatar name={name || '?'} />
       </View>
 
       {hasTrips ? (

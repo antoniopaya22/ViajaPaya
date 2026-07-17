@@ -21,3 +21,15 @@ Probado en dispositivo físico (Pixel 7, Expo Go SDK 57 tras reinstalar el APK c
 ## 2026-07-17 — f-010-supabase-setup (done)
 
 Primera feature del backlog por prioridad. `supabase/migrations/0001_init.sql`: tablas `trips/bookings/expenses/documents/itinerary_items` con `user_id` y RLS (`user_id = auth.uid()`) en las cinco. Cliente único `src/services/supabase.ts` (`@supabase/supabase-js` + `react-native-url-polyfill`, AsyncStorage como storage de sesión), sin credenciales hardcodeadas. Migración aplicada contra el proyecto Supabase real vía conexión Postgres directa (script Node puntual con `pg`, no añadido a package.json). Verificado: 5 tablas creadas, RLS activo, políticas presentes, consulta REST anónima a `trips` devuelve `[]` (200 OK) confirmando que RLS deniega por defecto. Pendiente de verificar el lado "autenticado ve solo sus filas" del criterio de aceptación hasta que exista un usuario real en `f-011-auth-sso`. `tsc --noEmit` y `npm test` sin errores.
+
+## 2026-07-17 — f-011-auth-sso (done, alcance ajustado a email OTP)
+
+Segunda feature del backlog por prioridad. Decisión de alcance: Google/Apple SSO requieren que el usuario cree sus propias credenciales OAuth (Google Cloud Console / Apple Developer Program) — no son creables por un agente, así que se implementó email + código OTP (Supabase Auth nativo, cero configuración externa), dejando `AuthProvider` preparado para añadir proveedores sociales más adelante sin cambios de arquitectura. `feature_list.json` actualizado para reflejar el alcance real.
+
+Construido: `src/contexts/AuthProvider.tsx` (session/user/loading, `sendOtp`/`verifyOtp`/`signOut`, suscrito a `onAuthStateChange`), `src/components/ui/TextField.tsx`, `src/app/login.tsx` (paso email → paso código), `AuthGate` en `src/app/_layout.tsx` (redirige a `/login` sin sesión y viceversa). `settings.tsx` y `index.tsx` ahora usan la sesión real (email, cerrar sesión, saludo dinámico vía `src/utils/user.ts#displayNameFromEmail`, con test).
+
+Dos problemas de infraestructura encontrados y corregidos al integrar `@supabase/supabase-js` con Metro/Expo Router (documentados en `specs/f-011-auth-sso/tasks.md`):
+1. `@supabase/functions-js` no resolvía bajo la resolución estricta de `exports` que Metro activa por defecto → `metro.config.js` con `resolver.unstable_enablePackageExports = false`.
+2. `app.json` tenía `web.output: "static"`, que pre-renderiza los layouts en Node/SSR donde `window` no existe; el storage de sesión de Supabase lo necesita → cambiado a `web.output: "single"` (SPA, sin SSR), correcto para una app mobile-first.
+
+Verificado: `tsc --noEmit`, `npm test` (incluye test nuevo de `displayNameFromEmail`), `expo start --web` sin errores de consola, sin sesión redirige a `/login` (confirmado por árbol de accesibilidad). Pendiente de que el usuario confirme en el Pixel 7 que el código OTP llega por email y el login completo funciona en dispositivo real.

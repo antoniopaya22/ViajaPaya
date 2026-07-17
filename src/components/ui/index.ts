@@ -9,3 +9,4 @@ export * from './Divider';
 export * from './EmptyState';
 export * from './Avatar';
 export * from './ListRow';
+export * from './TextField';
