@@ -56,6 +56,8 @@ export interface ThemeColors {
   primary: string;
   primaryMuted: string;
   onPrimary: string;
+  gradientFrom: string;
+  gradientTo: string;
 
   accent: string;
   onAccent: string;
@@ -84,6 +86,8 @@ export const Colors: Record<ColorScheme, ThemeColors> = {
     primary: palette.teal600,
     primaryMuted: palette.teal100,
     onPrimary: palette.white,
+    gradientFrom: palette.teal500,
+    gradientTo: palette.teal700,
 
     accent: palette.coral500,
     onAccent: palette.white,
@@ -110,6 +114,8 @@ export const Colors: Record<ColorScheme, ThemeColors> = {
     primary: palette.teal400,
     primaryMuted: 'rgba(45, 212, 191, 0.16)',
     onPrimary: palette.navy900,
+    gradientFrom: palette.teal400,
+    gradientTo: palette.teal600,
 
     accent: palette.coral400,
     onAccent: palette.navy900,

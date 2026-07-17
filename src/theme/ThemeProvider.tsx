@@ -27,7 +27,8 @@ const ThemeContext = createContext<Theme | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const deviceScheme = useDeviceColorScheme();
-  const [preference, setPreferenceState] = useState<SchemePreference>('system');
+  // Por defecto claro: el tema oscuro solo se activa si el usuario lo elige explícitamente en Ajustes.
+  const [preference, setPreferenceState] = useState<SchemePreference>('light');
 
   useEffect(() => {
     AsyncStorage.getItem(SCHEME_PREFERENCE_KEY).then((stored) => {
