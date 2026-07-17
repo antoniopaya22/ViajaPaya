@@ -26,3 +26,16 @@ Un magic link requiere abrir el enlace del email y que el sistema operativo devu
 ## Prueba manual (no automatizable)
 
 Recibir el código requiere acceso real a un email — se documenta como paso manual para el usuario en `progress/history.md`, no se simula.
+
+## Addendum — f-013-google-sso
+
+`supabase.auth` se configura con `flowType: 'pkce'` (recomendado para móvil, evita el flujo implícito con tokens en el fragmento de URL). `signInWithGoogle()`:
+
+1. `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo, skipBrowserRedirect: true } })` → devuelve `data.url` (la URL de consentimiento de Google), no navega solo.
+2. `WebBrowser.openAuthSessionAsync(data.url, redirectTo)` — abre un navegador in-app, y detecta cuándo la navegación llega a `redirectTo`, cerrando la ventana y devolviendo esa URL a JS (funciona igual en Expo Go, dev client o producción, sin depender del sistema de deep-link del SO).
+3. De la URL de vuelta se extrae `?code=...` (PKCE) y se llama `supabase.auth.exchangeCodeForSession(code)`.
+4. `redirectTo = makeRedirectUri()` de `expo-auth-session` — usa el `scheme` de `app.json` (`viajapaya://`) en builds nativos; en Expo Go genera una URI `exp://` dependiente de la IP local de desarrollo.
+
+**Limitación conocida en Expo Go**: la URI de redirect en Expo Go cambia según la IP local, así que hay que añadirla también en Supabase → Authentication → URL Configuration → Redirect URLs cada vez que cambie de red, o probar el flujo completo con un dev client (`npx expo run:android`) en vez de Expo Go, que sí soporta el `viajapaya://` fijo. `viajapaya://*` ya cubre el caso del scheme fijo; el caso `exp://` de Expo Go es el que puede requerir añadirse puntualmente.
+
+No se implementa Apple en esta pasada: mismo bloqueo (cuenta de Apple Developer del usuario), se añadiría con el mismo patrón (`signInWithApple`) cuando haya credenciales.

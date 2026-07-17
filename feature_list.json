@@ -226,5 +226,23 @@
     "tags": ["design-system", "ui", "layout"],
     "created_at": "2026-07-17T00:00:00Z",
     "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-013-google-sso",
+    "title": "Login con Google (SSO) además del email OTP",
+    "description": "Añadir signInWithGoogle a AuthProvider (Supabase signInWithOAuth + expo-web-browser + PKCE) y un botón 'Continuar con Google' en login.tsx, manteniendo el email OTP como alternativa. Requiere que el usuario cree un OAuth client en Google Cloud Console y lo configure en Supabase Dashboard (Authentication → Providers → Google) — pasos externos, no automatizables.",
+    "status": "in-progress",
+    "priority": "must",
+    "acceptance_criteria": [
+      "Existe un botón 'Continuar con Google' en login.tsx junto al flujo de email",
+      "AuthProvider expone signInWithGoogle sin romper sendOtp/verifyOtp/signOut existentes",
+      "Con las credenciales de Google configuradas en Supabase, tocar el botón abre el consentimiento de Google y vuelve con sesión iniciada",
+      "El flujo de email OTP sigue funcionando igual que antes"
+    ],
+    "spec_path": "specs/f-011-auth-sso/",
+    "dependencies": ["f-011-auth-sso"],
+    "tags": ["auth", "sso", "google"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
   }
 ]
