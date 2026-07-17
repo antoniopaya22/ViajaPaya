@@ -7,7 +7,7 @@
 
 ## Siguiente paso
 
-Arrancar `f-000-project-bootstrap` con `/feature:start f-000-project-bootstrap` para inicializar el proyecto Expo real (package.json, app.json con el EAS ID ya registrado, dependencias, `src/app/_layout.tsx`).
+`f-000-project-bootstrap` y `f-012-design-system-layout` ya están `done`. Seguir con `f-011-auth-sso` (Supabase ya integrado en `.env.local`) o `f-001-trip-crud` vía `/feature:start`.
 
 ---
 *Este archivo se sobrescribe cada sesión. El histórico va en [history.md](history.md).*

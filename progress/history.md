@@ -5,3 +5,11 @@ Registro cronológico de sesiones/features completadas. No editar entradas pasad
 ## 2026-07-17 — Harness inicial
 
 Creada la estructura completa del harness: `AGENTS.md`, `CLAUDE.md`, `docs/`, `feature_list.json` (sembrado con backlog inicial), `specs/`, `progress/`, subagentes (orchestrator/implementer/reviewer/explorer), comandos (`/feature:new`, `/feature:start`, `/feature:status`, `/progress:update`), skills locales (`viajapaya-domain`, `spec-workflow`), hooks de `.claude/settings.json`, y esqueleto vacío de `src/`. Ninguna feature de producto implementada todavía.
+
+## 2026-07-17 — Supabase (Auth SSO + BBDD)
+
+ADR 0002: Supabase como backend (Auth SSO + Postgres), manteniendo caché local para acceso offline (amplía ADR 0001). Añadidas `f-010-supabase-setup` y `f-011-auth-sso` al backlog. Credenciales (URL, publishable key, project ref, contraseña de BBDD) guardadas solo en `.env.local` (gitignored); `.env.example` documenta las variables sin valores.
+
+## 2026-07-17 — f-000-project-bootstrap y f-012-design-system-layout (done)
+
+Bootstrap real del proyecto Expo (SDK 57, Expo Router sobre `src/app`, TypeScript estricto con alias `@/*`, jest-expo + React Native Testing Library + babel-preset-expo). Construido el sistema de diseño (`src/theme`: colores claro/oscuro, tipografía Manrope/Inter vía Google Fonts, espaciado, radios, sombras, `ThemeProvider` con persistencia de preferencia en AsyncStorage) y la librería de componentes reutilizables (`src/components/ui`: Text, Button, Card, Screen, Header, IconButton, Badge, Divider, EmptyState, Avatar, ListRow) más `TripCard` de dominio. Layout base: root `_layout.tsx` (carga de fuentes, splash, Stack) y tabs Viajes/Documentos/Ajustes, cada una usando los mismos componentes. Verificado con `tsc --noEmit`, `npm test` (RNTL 14 requiere `await render(...)`, documentado en conventions.md) y `expo start --web` (bundling correcto, árbol de accesibilidad correcto en las 3 pantallas, sin errores de consola). Captura de pantalla no disponible en este entorno de preview (limitación de la herramienta, no de la app). Ambas features marcadas `done` en `feature_list.json`.
