@@ -3,7 +3,7 @@
     "id": "f-000-project-bootstrap",
     "title": "Bootstrap del proyecto Expo",
     "description": "Inicializar el proyecto Expo real dentro de src/ (Expo Router, TypeScript, alias @/*), enlazado al proyecto EAS ya registrado (slug viajapaya, owner payarroni, project ID 8291752b-7169-4b66-866a-dd516ae047cb), con jest-expo y React Native Testing Library configurados.",
-    "status": "backlog",
+    "status": "done",
     "priority": "must",
     "acceptance_criteria": [
       "npx expo start arranca la app sin errores",
@@ -205,6 +205,25 @@
     "spec_path": null,
     "dependencies": ["f-007-document-manager", "f-008-itinerary-timeline"],
     "tags": ["ux", "offline"],
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z"
+  },
+  {
+    "id": "f-012-design-system-layout",
+    "title": "Sistema de diseño y layout base de la app",
+    "description": "Design tokens (colores claro/oscuro, tipografía Manrope/Inter, espaciado, radios, sombras) vía ThemeProvider, librería de componentes reutilizables (Text, Button, Card, Screen, Header, IconButton, Badge, Divider, EmptyState, Avatar, ListRow) y el layout base de navegación (root Stack + tabs Viajes/Documentos/Ajustes) para que toda la app comparta el mismo aspecto visual.",
+    "status": "done",
+    "priority": "must",
+    "acceptance_criteria": [
+      "Existe un ThemeProvider con modo claro/oscuro/automático persistido",
+      "Los componentes de src/components/ui usan siempre los tokens del tema, no valores sueltos",
+      "Las 3 pantallas de las tabs (Viajes, Documentos, Ajustes) usan los mismos componentes Header/Screen/Card",
+      "npx tsc --noEmit y npm test pasan sin errores",
+      "La app renderiza correctamente en expo start --web (verificado vía árbol de accesibilidad, sin errores de consola)"
+    ],
+    "spec_path": null,
+    "dependencies": ["f-000-project-bootstrap"],
+    "tags": ["design-system", "ui", "layout"],
     "created_at": "2026-07-17T00:00:00Z",
     "updated_at": "2026-07-17T00:00:00Z"
   }
