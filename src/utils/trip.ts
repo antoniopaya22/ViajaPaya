@@ -21,3 +21,11 @@ export function formatDateRange(startDate: string, endDate: string): string {
   const endYearLabel = parseIsoDate(endDate).toLocaleDateString('es-ES', { year: 'numeric' });
   return `${format(startDate)} – ${format(endDate)} ${endYearLabel}`;
 }
+
+const MAX_DESTINATIONS_SHOWN = 2;
+
+export function formatDestinations(destinations: string[]): string {
+  if (destinations.length <= MAX_DESTINATIONS_SHOWN) return destinations.join(', ');
+  const shown = destinations.slice(0, MAX_DESTINATIONS_SHOWN).join(', ');
+  return `${shown} +${destinations.length - MAX_DESTINATIONS_SHOWN}`;
+}

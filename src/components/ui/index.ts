@@ -11,3 +11,4 @@ export * from './Avatar';
 export * from './ListRow';
 export * from './TextField';
 export * from './DateField';
+export * from './DestinationsField';

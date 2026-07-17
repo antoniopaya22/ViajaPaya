@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, View } from 'react-native';
 
-import { Button, DateField, Header, Screen, Text, TextField } from '@/components/ui';
+import { Button, DateField, DestinationsField, Header, Screen, Text, TextField } from '@/components/ui';
 import { deleteTrip, getTrip, updateTrip } from '@/services/trips';
 import { useTheme } from '@/theme';
 import { parseIsoDate, toIsoDate } from '@/utils/trip';
@@ -14,7 +14,7 @@ export default function TripDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [name, setName] = useState('');
-  const [destination, setDestination] = useState('');
+  const [destinations, setDestinations] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [budget, setBudget] = useState('');
@@ -29,7 +29,7 @@ export default function TripDetailScreen() {
         setNotFound(true);
       } else {
         setName(trip.name);
-        setDestination(trip.destination);
+        setDestinations(trip.destinations);
         setStartDate(parseIsoDate(trip.startDate));
         setEndDate(parseIsoDate(trip.endDate));
         setBudget(trip.budgetTotal != null ? String(trip.budgetTotal) : '');
@@ -44,7 +44,7 @@ export default function TripDetailScreen() {
   const handleSave = async () => {
     const nextErrors: Record<string, string> = {};
     if (!name.trim()) nextErrors.name = 'El nombre es obligatorio.';
-    if (!destination.trim()) nextErrors.destination = 'El destino es obligatorio.';
+    if (destinations.length === 0) nextErrors.destinations = 'Añade al menos un destino.';
     if (!startDate) nextErrors.startDate = 'Falta la fecha de inicio.';
     if (!endDate) nextErrors.endDate = 'Falta la fecha de fin.';
     if (startDate && endDate && endDate < startDate) {
@@ -57,7 +57,7 @@ export default function TripDetailScreen() {
     try {
       await updateTrip(id, {
         name: name.trim(),
-        destination: destination.trim(),
+        destinations,
         startDate: toIsoDate(startDate as Date),
         endDate: toIsoDate(endDate as Date),
         budgetTotal: budget.trim() ? Number(budget.trim()) : null,
@@ -115,7 +115,12 @@ export default function TripDetailScreen() {
 
       <View style={{ gap: spacing.md, marginTop: spacing.sm }}>
         <TextField label="Nombre" value={name} onChangeText={setName} error={errors.name} />
-        <TextField label="Destino" value={destination} onChangeText={setDestination} error={errors.destination} />
+        <DestinationsField
+          label="Destinos"
+          value={destinations}
+          onChange={setDestinations}
+          error={errors.destinations}
+        />
         <DateField label="Fecha de inicio" value={startDate} onChange={setStartDate} error={errors.startDate} />
         <DateField label="Fecha de fin" value={endDate} onChange={setEndDate} error={errors.endDate} />
         <TextField label="Presupuesto (opcional)" keyboardType="numeric" value={budget} onChangeText={setBudget} />

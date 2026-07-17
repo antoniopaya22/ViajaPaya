@@ -6,6 +6,7 @@ import { Card, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 import type { BadgeVariant } from '@/components/ui/Badge';
 import type { TripStatus } from '@/types/trip';
+import { formatDestinations } from '@/utils/trip';
 
 export type { TripStatus };
 
@@ -22,7 +23,7 @@ const STATUS_VARIANT: Record<TripStatus, BadgeVariant> = {
 };
 
 export interface TripCardProps {
-  destination: string;
+  destinations: string[];
   dateRangeLabel: string;
   status: TripStatus;
   bookingsCount: number;
@@ -30,10 +31,11 @@ export interface TripCardProps {
   onPress?: () => void;
 }
 
-export function TripCard({ destination, dateRangeLabel, status, bookingsCount, documentsCount, onPress }: TripCardProps) {
+export function TripCard({ destinations, dateRangeLabel, status, bookingsCount, documentsCount, onPress }: TripCardProps) {
   const { colors, radius, spacing } = useTheme();
   const statusVariant = STATUS_VARIANT[status];
   const statusColor = colors[statusVariant === 'neutral' ? 'textSecondary' : statusVariant];
+  const destinationLabel = formatDestinations(destinations);
 
   return (
     <Card variant="elevated" padding={0} onPress={onPress} style={{ overflow: 'hidden' }}>
@@ -85,10 +87,14 @@ export function TripCard({ destination, dateRangeLabel, status, bookingsCount, d
         </View>
 
         <View style={{ flex: 1, justifyContent: 'flex-end', gap: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="location" size={16} color={colors.onPrimary} />
-            <Text variant="h1" style={{ color: colors.onPrimary }} numberOfLines={1}>
-              {destination}
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+            <Ionicons name="location" size={16} color={colors.onPrimary} style={{ marginTop: 4 }} />
+            <Text
+              variant={destinations.length > 1 ? 'h2' : 'h1'}
+              style={{ color: colors.onPrimary, flex: 1 }}
+              numberOfLines={2}
+            >
+              {destinationLabel}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

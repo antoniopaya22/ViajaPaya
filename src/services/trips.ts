@@ -5,7 +5,7 @@ interface TripRow {
   id: string;
   user_id: string;
   name: string;
-  destination: string;
+  destinations: string[];
   start_date: string;
   end_date: string;
   budget_total: number | null;
@@ -18,7 +18,7 @@ function fromRow(row: TripRow): Trip {
     id: row.id,
     userId: row.user_id,
     name: row.name,
-    destination: row.destination,
+    destinations: row.destinations,
     startDate: row.start_date,
     endDate: row.end_date,
     budgetTotal: row.budget_total,
@@ -39,7 +39,7 @@ export async function createTrip(userId: string, input: TripInput): Promise<Trip
     .insert({
       user_id: userId,
       name: input.name,
-      destination: input.destination,
+      destinations: input.destinations,
       start_date: input.startDate,
       end_date: input.endDate,
       budget_total: input.budgetTotal,
@@ -55,7 +55,7 @@ export async function updateTrip(id: string, input: TripInput): Promise<Trip> {
     .from('trips')
     .update({
       name: input.name,
-      destination: input.destination,
+      destinations: input.destinations,
       start_date: input.startDate,
       end_date: input.endDate,
       budget_total: input.budgetTotal,

@@ -8,7 +8,7 @@ Gestionado por Supabase Auth (SSO). No se modela como tabla propia más allá de
 
 ## Trip (Viaje) — raíz del agregado
 
-Agrupa todo lo demás. Campos clave: `id`, `userId`, `name`, `destination(s)`, `startDate`, `endDate`, `coverImage?`, `budgetTotal?`.
+Agrupa todo lo demás. Campos clave: `id`, `userId`, `name`, `destinations: string[]`, `startDate`, `endDate`, `coverImage?`, `budgetTotal?`.
 
 ## Booking (Reserva)
 

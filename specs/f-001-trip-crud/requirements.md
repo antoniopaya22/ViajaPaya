@@ -2,7 +2,11 @@
 
 ## Alcance
 
-CRUD de viajes contra la tabla `trips` de Supabase (`supabase/migrations/0001_init.sql`), ya con RLS por `user_id`. Campos: `name` (obligatorio), `destination` (obligatorio), `start_date`/`end_date` (obligatorios), `budget_total` (opcional). `cover_image` queda fuera de alcance (necesita selector de imágenes, se aborda junto al gestor de documentos en `f-007`).
+CRUD de viajes contra la tabla `trips` de Supabase (`supabase/migrations/0001_init.sql` + `0002_trip_destinations_array.sql`), ya con RLS por `user_id`. Campos: `name` (obligatorio), `destinations` (lista de al menos un destino, ver addendum), `start_date`/`end_date` (obligatorios), `budget_total` (opcional). `cover_image` queda fuera de alcance (necesita selector de imágenes, se aborda junto al gestor de documentos en `f-007`).
+
+## Addendum — destinos como lista
+
+Feedback del usuario tras el primer pase: un viaje puede tener varios destinos (p. ej. un interrail por 3 ciudades), y mostrar un único string largo como título de la tarjeta se cortaba mal. Cambiado `destination text` → `destinations text[]` en la tabla (migración `0002`). `DestinationsField` permite añadir/quitar destinos como chips; `TripCard` muestra hasta 2 destinos y añade `+N` si hay más, en vez de truncar con puntos suspensivos a media palabra.
 
 ## EARS
 

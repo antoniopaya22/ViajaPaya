@@ -17,7 +17,7 @@ interface Trip {
   id: string;
   userId: string;
   name: string;
-  destination: string;
+  destinations: string[];
   startDate: string; // YYYY-MM-DD
   endDate: string;
   budgetTotal: number | null;

@@ -60,7 +60,7 @@ export default function TripsScreen() {
           {trips.map((trip) => (
             <TripCard
               key={trip.id}
-              destination={trip.destination}
+              destinations={trip.destinations}
               dateRangeLabel={formatDateRange(trip.startDate, trip.endDate)}
               status={getTripStatus(trip.startDate, trip.endDate)}
               bookingsCount={0}
