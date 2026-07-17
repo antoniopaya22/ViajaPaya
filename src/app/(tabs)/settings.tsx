@@ -1,7 +1,9 @@
 import { Pressable, View } from 'react-native';
 
+import { useAuth } from '@/contexts/AuthProvider';
 import { Avatar, Card, Divider, Header, ListRow, Screen, Text } from '@/components/ui';
 import { useTheme, type SchemePreference } from '@/theme';
+import { displayNameFromEmail } from '@/utils/user';
 
 const SCHEME_OPTIONS: { value: SchemePreference; label: string }[] = [
   { value: 'system', label: 'Automático' },
@@ -11,6 +13,8 @@ const SCHEME_OPTIONS: { value: SchemePreference; label: string }[] = [
 
 export default function SettingsScreen() {
   const { colors, spacing, radius, preference, setPreference } = useTheme();
+  const { user, signOut } = useAuth();
+  const email = user?.email ?? '';
 
   return (
     <Screen scroll>
@@ -18,11 +22,11 @@ export default function SettingsScreen() {
 
       <Card style={{ marginTop: spacing.xs }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          <Avatar name="Antonio Paya" />
+          <Avatar name={email ? displayNameFromEmail(email) : '?'} />
           <View>
-            <Text variant="title">Antonio Paya</Text>
+            <Text variant="title">{email ? displayNameFromEmail(email) : 'Sin nombre'}</Text>
             <Text variant="bodySmall" color="textSecondary">
-              antonio.paya@thenextpangea.com
+              {email}
             </Text>
           </View>
         </View>
@@ -71,9 +75,9 @@ export default function SettingsScreen() {
         CUENTA
       </Text>
       <Card>
-        <ListRow icon="log-in-outline" title="Iniciar sesión" subtitle="Sincroniza tus viajes entre dispositivos" />
-        <Divider />
         <ListRow icon="shield-checkmark-outline" title="Privacidad y datos" />
+        <Divider />
+        <ListRow icon="log-out-outline" title="Cerrar sesión" onPress={signOut} showChevron={false} />
       </Card>
 
       <Text variant="overline" color="textTertiary" style={{ marginTop: spacing.xl, marginBottom: spacing.xs }}>

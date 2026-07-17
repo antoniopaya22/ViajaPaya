@@ -37,17 +37,17 @@
   },
   {
     "id": "f-011-auth-sso",
-    "title": "Autenticación SSO con Supabase Auth",
-    "description": "Login/logout mediante SSO (proveedores sociales, p. ej. Google/Apple) usando Supabase Auth, con sesión persistida y pantallas de la app protegidas para usuarios autenticados.",
-    "status": "backlog",
+    "title": "Autenticación con Supabase Auth (email OTP; Google/Apple preparados)",
+    "description": "Login/logout con email + código OTP usando Supabase Auth, con sesión persistida y pantallas de la app protegidas para usuarios autenticados. Google/Apple SSO requieren que el usuario cree sus propias credenciales OAuth (Google Cloud / Apple Developer) — el AuthProvider queda preparado para añadirlos sin cambios de arquitectura, pero no están implementados en esta pasada.",
+    "status": "done",
     "priority": "must",
     "acceptance_criteria": [
-      "El usuario puede iniciar sesión mediante un proveedor SSO soportado por Supabase Auth",
+      "El usuario puede iniciar sesión con email + código OTP de 6 dígitos",
       "La sesión persiste entre reinicios de la app",
       "Las pantallas de viajes/documentos no son accesibles sin sesión iniciada",
       "El usuario puede cerrar sesión"
     ],
-    "spec_path": null,
+    "spec_path": "specs/f-011-auth-sso/",
     "dependencies": ["f-010-supabase-setup"],
     "tags": ["auth", "sso", "supabase"],
     "created_at": "2026-07-17T00:00:00Z",
