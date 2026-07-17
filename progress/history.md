@@ -33,3 +33,15 @@ Dos problemas de infraestructura encontrados y corregidos al integrar `@supabase
 2. `app.json` tenía `web.output: "static"`, que pre-renderiza los layouts en Node/SSR donde `window` no existe; el storage de sesión de Supabase lo necesita → cambiado a `web.output: "single"` (SPA, sin SSR), correcto para una app mobile-first.
 
 Verificado: `tsc --noEmit`, `npm test` (incluye test nuevo de `displayNameFromEmail`), `expo start --web` sin errores de consola, sin sesión redirige a `/login` (confirmado por árbol de accesibilidad). Pendiente de que el usuario confirme en el Pixel 7 que el código OTP llega por email y el login completo funciona en dispositivo real.
+
+## 2026-07-17 — f-013-google-sso (código listo, pendiente de configuración externa)
+
+El usuario recibió el email de OTP como link (comportamiento por defecto de la plantilla de Supabase, no bug) y pidió login con Google además del email. Añadido `f-013-google-sso` al backlog, `status: in-progress` (no `done`: falta que el usuario complete la configuración externa y confirme el flujo end-to-end).
+
+Código: `flowType: 'pkce'` en `src/services/supabase.ts`; `signInWithGoogle` en `AuthProvider` (`signInWithOAuth` + `expo-web-browser` `openAuthSessionAsync` + `exchangeCodeForSession`, sin depender del sistema de deep-link del SO); botón "Continuar con Google" en `login.tsx` junto al flujo de email (que sigue intacto). Instaladas `expo-web-browser` y `expo-auth-session`.
+
+Pasos externos entregados al usuario (no automatizables, requieren su propia cuenta): crear proyecto + OAuth consent screen + OAuth client (tipo Web, redirect URI `https://eltpqbxcfoouwweqockh.supabase.co/auth/v1/callback`) en Google Cloud Console; pegar Client ID/Secret en Supabase Dashboard → Authentication → Providers → Google; añadir `viajapaya://*` a Authentication → URL Configuration → Redirect URLs.
+
+Limitación documentada en `design.md`: en Expo Go la URI de redirect es dinámica (`exp://` + IP local), puede hacer falta añadirla puntualmente en Supabase; un dev client (`npx expo run:android`) usaría el scheme fijo `viajapaya://` sin ese problema. `tsc --noEmit` y `npm test` sin errores; verificado en `expo start --web` que el botón aparece y el flujo de email no se rompió.
+
+**Confirmado funcionando en el Pixel 7**: login con Google completo end-to-end. Consola mostró `WebCrypto API is not supported. Code challenge method will default to use plain instead of sha256` — esperado, Hermes no expone `crypto.subtle`; PKCE cae a método `plain` (válido según RFC 7636, no rompe nada). Investigado `expo-standard-web-crypto` como posible fix: solo implementa `getRandomValues`, no `subtle.digest`, así que no habría arreglado el warning — no se instaló. Usuario decidió dejarlo así en vez de invertir en un polyfill a medida. `f-013-google-sso` marcada `done`.

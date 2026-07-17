@@ -3,7 +3,7 @@
 - **Feature activa:** ninguna
 - **Spec activa:** —
 - **Tarea en curso:** —
-- **Bloqueos:** ninguno (pendiente: confirmar en el móvil que el login por código llega bien por email)
+- **Bloqueos:** ninguno
 
 ## Siguiente paso
 

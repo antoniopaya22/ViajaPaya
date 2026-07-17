@@ -1,8 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useAuth } from '@/contexts/AuthProvider';
-import { Button, Screen, Text, TextField } from '@/components/ui';
+import { Button, Divider, Screen, Text, TextField } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 type Step = 'email' | 'code';
@@ -12,14 +13,26 @@ function isValidEmail(value: string): boolean {
 }
 
 export default function LoginScreen() {
-  const { spacing } = useTheme();
-  const { sendOtp, verifyOtp } = useAuth();
+  const { colors, spacing } = useTheme();
+  const { sendOtp, verifyOtp, signInWithGoogle } = useAuth();
 
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setGoogleSubmitting(true);
+    const { error: googleError } = await signInWithGoogle();
+    setGoogleSubmitting(false);
+    if (googleError) {
+      setError(googleError);
+    }
+    // Si no hay error, AuthProvider actualiza la sesión y el AuthGate redirige solo.
+  };
 
   const handleSendOtp = async () => {
     if (!isValidEmail(email)) {
@@ -65,8 +78,20 @@ export default function LoginScreen() {
         {step === 'email' ? (
           <>
             <Text variant="h3">Inicia sesión</Text>
+
+            <Button
+              label="Continuar con Google"
+              variant="outline"
+              fullWidth
+              loading={googleSubmitting}
+              leftIcon={<Ionicons name="logo-google" size={18} color={colors.textPrimary} />}
+              onPress={handleGoogleSignIn}
+            />
+
+            <Divider />
+
             <Text variant="body" color="textSecondary">
-              Te enviamos un código de acceso a tu email, sin contraseña.
+              O te enviamos un código de acceso a tu email, sin contraseña.
             </Text>
             <TextField
               label="Email"
