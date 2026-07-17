@@ -21,7 +21,7 @@
     "id": "f-010-supabase-setup",
     "title": "Integración de Supabase (cliente + esquema de BBDD)",
     "description": "Configurar el cliente de Supabase (@supabase/supabase-js) en src/services/supabase.ts leyendo EXPO_PUBLIC_SUPABASE_URL/EXPO_PUBLIC_SUPABASE_ANON_KEY de variables de entorno, y crear el esquema inicial de Postgres (trips, bookings, expenses, documents, itinerary_items) con Row Level Security activado desde el primer día.",
-    "status": "backlog",
+    "status": "done",
     "priority": "must",
     "acceptance_criteria": [
       "El cliente de Supabase se inicializa sin credenciales hardcodeadas en el código",
@@ -29,7 +29,7 @@
       "Todas las tablas tienen RLS activado con política user_id = auth.uid()",
       "Una consulta de prueba autenticada devuelve solo filas del usuario actual"
     ],
-    "spec_path": null,
+    "spec_path": "specs/f-010-supabase-setup/",
     "dependencies": ["f-000-project-bootstrap"],
     "tags": ["backend", "supabase", "infra"],
     "created_at": "2026-07-17T00:00:00Z",

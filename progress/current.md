@@ -7,7 +7,7 @@
 
 ## Siguiente paso
 
-`f-000-project-bootstrap` y `f-012-design-system-layout` ya están `done`. Seguir con `f-011-auth-sso` (Supabase ya integrado en `.env.local`) o `f-001-trip-crud` vía `/feature:start`.
+Siguiente en la lista de prioridad: `f-011-auth-sso` (login SSO con Supabase Auth) vía `/feature:start f-011-auth-sso`.
 
 ---
 *Este archivo se sobrescribe cada sesión. El histórico va en [history.md](history.md).*
