@@ -17,14 +17,11 @@ export function DestinationsField({ label, value, onChange, error }: Destination
   const { colors, radius, spacing } = useTheme();
   const [draft, setDraft] = useState('');
 
-  const addDestination = () => {
+  const commitDraft = () => {
     const trimmed = draft.trim();
-    if (!trimmed || value.includes(trimmed)) {
-      setDraft('');
-      return;
-    }
-    onChange([...value, trimmed]);
     setDraft('');
+    if (!trimmed || value.includes(trimmed)) return;
+    onChange([...value, trimmed]);
   };
 
   const removeDestination = (destination: string) => {
@@ -38,7 +35,8 @@ export function DestinationsField({ label, value, onChange, error }: Destination
         placeholder="Kioto, Japón"
         value={draft}
         onChangeText={setDraft}
-        onSubmitEditing={addDestination}
+        onSubmitEditing={commitDraft}
+        onBlur={commitDraft}
         returnKeyType="done"
         error={error}
       />
@@ -71,7 +69,8 @@ export function DestinationsField({ label, value, onChange, error }: Destination
       ) : null}
 
       <Text variant="caption" color="textTertiary">
-        Escribe un destino y pulsa Intro para añadirlo. Puedes añadir varios.
+        Escribe un destino (p. ej. "Kioto, Japón") y pulsa Intro, o simplemente sigue adelante: se añade solo. Repite para
+        añadir más de uno.
       </Text>
     </View>
   );

@@ -10,13 +10,14 @@ export interface DateFieldProps {
   value: Date | null;
   onChange: (date: Date) => void;
   error?: string | null;
+  minimumDate?: Date;
 }
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-export function DateField({ label, value, onChange, error }: DateFieldProps) {
+export function DateField({ label, value, onChange, error, minimumDate }: DateFieldProps) {
   const { colors, radius, spacing } = useTheme();
   const [showPicker, setShowPicker] = useState(false);
 
@@ -43,9 +44,10 @@ export function DateField({ label, value, onChange, error }: DateFieldProps) {
 
       {showPicker && (
         <DateTimePicker
-          value={value ?? new Date()}
+          value={value ?? minimumDate ?? new Date()}
           mode="date"
           display="default"
+          minimumDate={minimumDate}
           onChange={(_event, selectedDate) => {
             setShowPicker(false);
             if (selectedDate) onChange(selectedDate);

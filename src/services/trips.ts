@@ -8,7 +8,6 @@ interface TripRow {
   destinations: string[];
   start_date: string;
   end_date: string;
-  budget_total: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,7 +20,6 @@ function fromRow(row: TripRow): Trip {
     destinations: row.destinations,
     startDate: row.start_date,
     endDate: row.end_date,
-    budgetTotal: row.budget_total,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -42,7 +40,6 @@ export async function createTrip(userId: string, input: TripInput): Promise<Trip
       destinations: input.destinations,
       start_date: input.startDate,
       end_date: input.endDate,
-      budget_total: input.budgetTotal,
     })
     .select('*')
     .single();
@@ -58,7 +55,6 @@ export async function updateTrip(id: string, input: TripInput): Promise<Trip> {
       destinations: input.destinations,
       start_date: input.startDate,
       end_date: input.endDate,
-      budget_total: input.budgetTotal,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

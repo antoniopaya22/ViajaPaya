@@ -56,11 +56,11 @@
   {
     "id": "f-001-trip-crud",
     "title": "Gestión de viajes (CRUD)",
-    "description": "Crear, ver, editar y borrar viajes (nombre, destino(s), fechas de inicio/fin, presupuesto total) contra Supabase. Es la entidad raíz de la que cuelga todo lo demás. cover_image queda fuera de alcance hasta f-007 (necesita selector de imágenes).",
+    "description": "Crear, ver, editar y borrar viajes (nombre, lista de destinos, fechas de inicio/fin) contra Supabase. Es la entidad raíz de la que cuelga todo lo demás. Sin presupuesto: el coste se calcula sumando gastos en f-006. cover_image queda fuera de alcance hasta f-007 (necesita selector de imágenes).",
     "status": "in-progress",
     "priority": "must",
     "acceptance_criteria": [
-      "El usuario puede crear un viaje con nombre, destino y fechas",
+      "El usuario puede crear un viaje con nombre, uno o varios destinos y fechas",
       "El usuario puede editar y borrar un viaje existente",
       "La lista de viajes se ordena por fecha de inicio",
       "Los datos persisten entre reinicios de la app"
@@ -141,18 +141,19 @@
   },
   {
     "id": "f-006-budget-expenses",
-    "title": "Presupuesto y gastos",
-    "description": "Registrar gastos asociados a un viaje (importe, moneda, categoría, fecha, nota) y comparar el total gastado contra el presupuesto del viaje.",
+    "title": "Registro de gastos y coste total del viaje",
+    "description": "Registrar gastos de un viaje a medida que se producen (importe, moneda, descripción, etiquetas, fecha) y calcular el coste total sumándolos a posteriori. No se fija un presupuesto de antemano al crear el viaje — el 'presupuesto' es, en todo caso, informativo y a futuro (ver acceptance_criteria), el foco es llevar la cuenta de lo gastado.",
     "status": "backlog",
     "priority": "should",
     "acceptance_criteria": [
-      "El usuario puede añadir un gasto con importe, categoría y fecha",
-      "Se muestra el total gastado frente al presupuesto del viaje",
-      "Los gastos se pueden filtrar por categoría"
+      "El usuario puede añadir un gasto con importe, descripción, etiquetas y fecha",
+      "El usuario puede añadir/quitar etiquetas libres a un gasto (no una categoría fija predefinida)",
+      "Se muestra el coste total del viaje como la suma de sus gastos",
+      "Los gastos se pueden filtrar por etiqueta"
     ],
     "spec_path": null,
     "dependencies": ["f-001-trip-crud"],
-    "tags": ["budget", "expenses"],
+    "tags": ["expenses"],
     "created_at": "2026-07-17T00:00:00Z",
     "updated_at": "2026-07-17T00:00:00Z"
   },

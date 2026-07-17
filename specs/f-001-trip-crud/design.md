@@ -41,4 +41,11 @@ Un único componente de formulario (campos: nombre, destino, fecha inicio, fecha
 `ListRow`/`Button` variant `destructive` + confirmación nativa (`Alert.alert`) antes de llamar a `deleteTrip`. No se implementa un modal de confirmación propio por ahora (`Alert.alert` cubre el caso con cero componentes nuevos).
 
 ## Fuera de alcance
-`cover_image` (necesita `expo-image-picker`, se hace junto a `f-007`). Presupuesto vs. gastos reales (`f-006`). Reservas/itinerario dentro del detalle del viaje (`f-002` en adelante) — `[id].tsx` en esta pasada solo edita los campos propios del viaje.
+`cover_image` (necesita `expo-image-picker`, se hace junto a `f-007`). Gastos/coste total (`f-006`). Reservas/itinerario dentro del detalle del viaje (`f-002` en adelante) — `[id].tsx` en esta pasada solo edita los campos propios del viaje.
+
+## Addendum — segunda ronda de feedback
+
+- **`budget_total` eliminado** de `trips` (migración `0003`): el usuario no quiere fijar presupuesto al crear el viaje, quiere ir registrando gastos y calcular el coste a posteriori. `f-006` reescrita en consecuencia (gastos con descripción + etiquetas libres, no categoría fija).
+- **`DestinationsField`**: `commitDraft` se dispara en `onSubmitEditing` **y** en `onBlur` — antes solo confirmaba con Intro, y si el usuario escribía y pasaba a otro campo sin pulsar Intro, el destino se perdía silenciosamente (el formulario fallaba la validación "añade al menos un destino" sin que quedara claro por qué). `onBlur` se dispara de forma fiable antes de que se procese la pulsación de un botón distinto (son eventos nativos separados), así que confiar en él para el "Siguiente" del wizard es seguro sin necesitar una ref imperativa.
+- **`DateField.minimumDate`**: nueva prop, pasada al `DateTimePicker` nativo. En ambas pantallas, el `onChange` de la fecha de inicio comprueba si la fecha de fin ya elegida quedó antes y la ajusta automáticamente.
+- **`trip/new.tsx` como wizard de 3 pasos** (nombre → destinos → fechas) en vez de un formulario largo, con indicador de progreso simple (texto "Paso X de 3" + barra). `trip/[id].tsx` sigue siendo un formulario único — al editar ya existe contexto suficiente para verlo todo de golpe, un wizard ahí sería fricción añadida sin beneficio.

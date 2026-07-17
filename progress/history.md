@@ -45,3 +45,15 @@ Pasos externos entregados al usuario (no automatizables, requieren su propia cue
 Limitación documentada en `design.md`: en Expo Go la URI de redirect es dinámica (`exp://` + IP local), puede hacer falta añadirla puntualmente en Supabase; un dev client (`npx expo run:android`) usaría el scheme fijo `viajapaya://` sin ese problema. `tsc --noEmit` y `npm test` sin errores; verificado en `expo start --web` que el botón aparece y el flujo de email no se rompió.
 
 **Confirmado funcionando en el Pixel 7**: login con Google completo end-to-end. Consola mostró `WebCrypto API is not supported. Code challenge method will default to use plain instead of sha256` — esperado, Hermes no expone `crypto.subtle`; PKCE cae a método `plain` (válido según RFC 7636, no rompe nada). Investigado `expo-standard-web-crypto` como posible fix: solo implementa `getRandomValues`, no `subtle.digest`, así que no habría arreglado el warning — no se instaló. Usuario decidió dejarlo así en vez de invertir en un polyfill a medida. `f-013-google-sso` marcada `done`.
+
+## 2026-07-17 — f-001-trip-crud, segunda ronda de feedback
+
+Probado en el Pixel 7 tras la primera pasada. Tres problemas reportados:
+
+1. **Bug real**: al escribir varios destinos y no pulsar Intro en el último, no se guardaba ninguno. `DestinationsField` solo confirmaba el borrador (`draft`) en `onSubmitEditing`; si el usuario tocaba otro campo o el botón de guardar sin pulsar Intro, el texto se perdía silenciosamente y la validación "añade al menos un destino" fallaba sin que quedara claro por qué. Corregido: `commitDraft` también se dispara en `onBlur` (evento nativo separado y anterior a que se procese la pulsación de otro botón, así que es fiable sin necesitar una ref imperativa).
+2. **Restricción de fechas**: la fecha de fin ahora usa `minimumDate` (nueva prop de `DateField`, pasada al `DateTimePicker` nativo) igual a la fecha de inicio elegida; si ya había una fecha de fin anterior a la nueva fecha de inicio, se ajusta automáticamente.
+3. **Malentendido de presupuesto**: la app pedía un presupuesto al crear el viaje; el usuario quiere ir registrando gastos (con descripción y etiquetas) y calcular el coste total a posteriori, no fijar un presupuesto de antemano. Eliminado `budget_total` de `trips` (migración `0003`, aplicada al proyecto real), de `Trip`/`TripInput`, del servicio y de ambos formularios. Reescrita la descripción/acceptance_criteria de `f-006-budget-expenses` en `feature_list.json` para reflejar el modelo correcto (gastos con etiquetas libres, coste total = suma de gastos).
+
+Además, petición de UX: `trip/new.tsx` pasa de formulario largo único a wizard de 3 pasos (nombre → destinos → fechas) con indicador de progreso. `trip/[id].tsx` (editar) se mantiene como formulario único a propósito — un wizard ahí sería fricción sin beneficio, ya hay contexto suficiente al editar.
+
+`tsc --noEmit`, `npm test` (9 tests, incluye `formatDestinations`) y `expo start --web` sin errores. Migraciones `0002`/`0003` aplicadas contra Supabase real. Pendiente de que el usuario vuelva a probar en el Pixel 7.

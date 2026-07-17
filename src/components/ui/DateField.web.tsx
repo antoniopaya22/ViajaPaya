@@ -10,6 +10,7 @@ export interface DateFieldProps {
   value: Date | null;
   onChange: (date: Date) => void;
   error?: string | null;
+  minimumDate?: Date;
 }
 
 function safeParseIsoDate(value: string): Date | null {
@@ -17,8 +18,9 @@ function safeParseIsoDate(value: string): Date | null {
 }
 
 // @react-native-community/datetimepicker no tiene implementación web; en el
-// preview de escritorio usamos un input de texto YYYY-MM-DD en su lugar.
-export function DateField({ label, value, onChange, error }: DateFieldProps) {
+// preview de escritorio usamos un input de texto YYYY-MM-DD en su lugar
+// (minimumDate no se aplica aquí, solo en el picker nativo).
+export function DateField({ label, value, onChange, error, minimumDate: _minimumDate }: DateFieldProps) {
   const { spacing } = useTheme();
 
   return (

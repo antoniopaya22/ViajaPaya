@@ -8,6 +8,13 @@ CRUD de viajes contra la tabla `trips` de Supabase (`supabase/migrations/0001_in
 
 Feedback del usuario tras el primer pase: un viaje puede tener varios destinos (p. ej. un interrail por 3 ciudades), y mostrar un único string largo como título de la tarjeta se cortaba mal. Cambiado `destination text` → `destinations text[]` en la tabla (migración `0002`). `DestinationsField` permite añadir/quitar destinos como chips; `TripCard` muestra hasta 2 destinos y añade `+N` si hay más, en vez de truncar con puntos suspensivos a media palabra.
 
+## Addendum 2 — feedback de segunda ronda
+
+11. CUANDO el usuario escribe un destino y dirige el foco a otro campo (sin pulsar Intro) EL SISTEMA DEBERÁ añadirlo igualmente a la lista (`onBlur` confirma, no solo `onSubmitEditing` — bug: se perdían destinos escritos si no se pulsaba Intro explícitamente).
+12. CUANDO el usuario ya eligió fecha de inicio EL SISTEMA DEBERÁ impedir elegir una fecha de fin anterior a esa (`minimumDate` en el selector nativo) y, si ya había una fecha de fin anterior, actualizarla automáticamente a la nueva fecha de inicio.
+13. CUANDO el usuario crea o edita un viaje EL SISTEMA NO DEBERÁ pedir un presupuesto — el coste se calcula sumando gastos (`f-006`), no se fija de antemano.
+14. CUANDO el usuario crea un viaje nuevo EL SISTEMA DEBERÁ guiarlo paso a paso (nombre → destinos → fechas) en vez de un formulario largo único. La edición de un viaje existente (`trip/[id]`) permanece como formulario único (no se repite el wizard al editar).
+
 ## EARS
 
 1. CUANDO el usuario autenticado abre la pantalla de Viajes EL SISTEMA DEBERÁ listar sus viajes ordenados por `start_date` ascendente.

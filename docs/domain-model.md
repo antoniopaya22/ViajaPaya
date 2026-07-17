@@ -8,7 +8,7 @@ Gestionado por Supabase Auth (SSO). No se modela como tabla propia más allá de
 
 ## Trip (Viaje) — raíz del agregado
 
-Agrupa todo lo demás. Campos clave: `id`, `userId`, `name`, `destinations: string[]`, `startDate`, `endDate`, `coverImage?`, `budgetTotal?`.
+Agrupa todo lo demás. Campos clave: `id`, `userId`, `name`, `destinations: string[]`, `startDate`, `endDate`, `coverImage?`. Sin presupuesto propio: el coste del viaje se calcula sumando sus `Expense` (ver más abajo), no se fija de antemano.
 
 ## Booking (Reserva)
 
@@ -20,9 +20,9 @@ Cualquier reserva ya hecha, asociada a un `Trip`. Subtipos por `type`:
 
 Campos comunes: `id`, `tripId`, `type`, `referenceCode?`, `attachments: Document[]` (billetes/QR asociados).
 
-## Expense (Gasto) y presupuesto
+## Expense (Gasto)
 
-`id`, `tripId`, `amount`, `currency`, `category`, `date`, `note?`. El presupuesto del viaje (`Trip.budgetTotal`) se compara contra la suma de `Expense` del viaje.
+`id`, `tripId`, `amount`, `currency`, `description`, `tags: string[]`, `date`. Se registran a medida que se producen; el coste total del viaje es la suma de sus `Expense`, no una comparación contra un presupuesto fijado de antemano.
 
 ## Document (Documento)
 

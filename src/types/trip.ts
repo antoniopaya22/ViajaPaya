@@ -7,7 +7,6 @@ export interface Trip {
   destinations: string[];
   startDate: string;
   endDate: string;
-  budgetTotal: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,5 +16,4 @@ export interface TripInput {
   destinations: string[];
   startDate: string;
   endDate: string;
-  budgetTotal: number | null;
 }
